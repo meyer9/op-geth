@@ -668,6 +668,11 @@ func (api *ConsensusAPI) NewPayloadV4(params engine.ExecutableData, versionedHas
 	if api.eth.BlockChain().Config().LatestFork(params.Timestamp) != forks.Prague {
 		return engine.PayloadStatusV1{Status: engine.INVALID}, engine.UnsupportedFork.With(errors.New("newPayloadV4 must only be called for prague payloads"))
 	}
+
+	if len(executionRequests) > 0 && api.eth.BlockChain().Config().IsIsthmus(params.Timestamp) {
+		return engine.PayloadStatusV1{Status: engine.INVALID}, engine.InvalidParams.With(errors.New("executionRequests must be empty in Isthmus"))
+	}
+
 	requests := convertRequests(executionRequests)
 	if err := validateRequests(requests); err != nil {
 		return engine.PayloadStatusV1{Status: engine.INVALID}, engine.InvalidParams.With(err)
